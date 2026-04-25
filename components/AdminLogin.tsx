@@ -5,7 +5,7 @@ import { setAdminSession } from '../services/storage';
 import { getBrandConfig } from '../services/branding';
 
 interface AdminLoginProps {
-    onLogin: () => void;
+    onLogin: (role: 'admin' | 'adminscan') => void;
 }
 
 const InputField = ({
@@ -45,8 +45,11 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
 
         try {
             if (username === 'admin' && password === 'admin123') {
-                setAdminSession();
-                onLogin();
+                setAdminSession('admin');
+                onLogin('admin');
+            } else if (username === 'adminscan' && password === 'scan123') {
+                setAdminSession('adminscan');
+                onLogin('adminscan');
             } else {
                 setError('Invalid username or password.');
             }

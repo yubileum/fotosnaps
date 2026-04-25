@@ -12,9 +12,10 @@ import { getBrandConfig } from '../services/branding';
 
 interface AdminViewProps {
     onLogout: () => void;
+    adminRole?: 'admin' | 'adminscan' | null;
 }
 
-export const AdminView: React.FC<AdminViewProps> = ({ onLogout }) => {
+export const AdminView: React.FC<AdminViewProps> = ({ onLogout, adminRole = 'admin' }) => {
     const [isScanning, setIsScanning] = useState(false);
     const [showBrandSettings, setShowBrandSettings] = useState(false);
     const [showManualInput, setShowManualInput] = useState(false);
@@ -313,27 +314,31 @@ export const AdminView: React.FC<AdminViewProps> = ({ onLogout }) => {
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => setShowDashboard(true)}
-                            className="p-2.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all"
-                            title="Analytics Dashboard"
-                        >
-                            <BarChart2 size={18} />
-                        </button>
-                        <button
-                            onClick={() => setShowStampConfig(true)}
-                            className="p-2.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all"
-                            title="Stamp Configuration"
-                        >
-                            <Award size={18} />
-                        </button>
-                        <button
-                            onClick={() => setShowBrandSettings(true)}
-                            className="p-2.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all"
-                            title="Brand Settings"
-                        >
-                            <Palette size={18} />
-                        </button>
+                        {adminRole !== 'adminscan' && (
+                            <>
+                                <button
+                                    onClick={() => setShowDashboard(true)}
+                                    className="p-2.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all"
+                                    title="Analytics Dashboard"
+                                >
+                                    <BarChart2 size={18} />
+                                </button>
+                                <button
+                                    onClick={() => setShowStampConfig(true)}
+                                    className="p-2.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all"
+                                    title="Stamp Configuration"
+                                >
+                                    <Award size={18} />
+                                </button>
+                                <button
+                                    onClick={() => setShowBrandSettings(true)}
+                                    className="p-2.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all"
+                                    title="Brand Settings"
+                                >
+                                    <Palette size={18} />
+                                </button>
+                            </>
+                        )}
                         <button
                             onClick={onLogout}
                             className="px-4 py-2.5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all flex items-center gap-2 font-bold"
@@ -406,22 +411,24 @@ export const AdminView: React.FC<AdminViewProps> = ({ onLogout }) => {
                         </button>
 
                         {/* Secondary Actions */}
-                        <div className="grid grid-cols-2 gap-3 pt-4">
-                            <button
-                                onClick={downloadReport}
-                                className="bg-gray-700/50 hover:bg-gray-700 border border-gray-600 active:scale-95 transition-all text-gray-300 font-bold py-4 rounded-xl flex items-center justify-center gap-2 text-sm uppercase tracking-wider"
-                            >
-                                <Download size={16} />
-                                Logs
-                            </button>
-                            <button
-                                onClick={downloadMembers}
-                                className="bg-gray-700/50 hover:bg-gray-700 border border-gray-600 active:scale-95 transition-all text-gray-300 font-bold py-4 rounded-xl flex items-center justify-center gap-2 text-sm uppercase tracking-wider"
-                            >
-                                <Users size={16} />
-                                Members
-                            </button>
-                        </div>
+                        {adminRole !== 'adminscan' && (
+                            <div className="grid grid-cols-2 gap-3 pt-4">
+                                <button
+                                    onClick={downloadReport}
+                                    className="bg-gray-700/50 hover:bg-gray-700 border border-gray-600 active:scale-95 transition-all text-gray-300 font-bold py-4 rounded-xl flex items-center justify-center gap-2 text-sm uppercase tracking-wider"
+                                >
+                                    <Download size={16} />
+                                    Logs
+                                </button>
+                                <button
+                                    onClick={downloadMembers}
+                                    className="bg-gray-700/50 hover:bg-gray-700 border border-gray-600 active:scale-95 transition-all text-gray-300 font-bold py-4 rounded-xl flex items-center justify-center gap-2 text-sm uppercase tracking-wider"
+                                >
+                                    <Users size={16} />
+                                    Members
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
 

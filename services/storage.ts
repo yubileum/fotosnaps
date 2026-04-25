@@ -90,12 +90,15 @@ const callApi = async (action: string, params: Record<string, string> = {}, payl
 
 // --- AUTH SERVICES ---
 
-export const setAdminSession = () => {
+export const setAdminSession = (role: 'admin' | 'adminscan' = 'admin') => {
   localStorage.setItem(ADMIN_SESSION_KEY, 'true');
+  localStorage.setItem(ADMIN_SESSION_KEY + '_role', role);
 };
 
-export const checkAdminSession = (): boolean => {
-  return localStorage.getItem(ADMIN_SESSION_KEY) === 'true';
+export const checkAdminSession = (): { isAdmin: boolean, role: 'admin' | 'adminscan' | null } => {
+  const isAdmin = localStorage.getItem(ADMIN_SESSION_KEY) === 'true';
+  const role = localStorage.getItem(ADMIN_SESSION_KEY + '_role') as 'admin' | 'adminscan' || 'admin';
+  return { isAdmin, role: isAdmin ? role : null };
 };
 
 export const getSessionUser = async (forceFetch: boolean = false): Promise<User | null> => {

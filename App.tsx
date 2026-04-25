@@ -11,6 +11,7 @@ import { fetchStampConfig } from './services/stampConfig';
 
 const App: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState(false);
+  const [adminRole, setAdminRole] = useState<'admin' | 'adminscan' | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [initializing, setInitializing] = useState(true);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
@@ -34,8 +35,10 @@ const App: React.FC = () => {
       }
 
       // 1. Check for Admin persistence first
-      if (checkAdminSession()) {
+      const adminSession = checkAdminSession();
+      if (adminSession.isAdmin) {
         setIsAdmin(true);
+        setAdminRole(adminSession.role);
         setInitializing(false);
         return;
       }
@@ -69,8 +72,9 @@ const App: React.FC = () => {
     setIsAdmin(admin);
   };
 
-  const handleAdminLogin = () => {
+  const handleAdminLogin = (role: 'admin' | 'adminscan') => {
     setIsAdmin(true);
+    setAdminRole(role);
     setShowAdminLogin(false);
     window.location.hash = ''; // Clear the hash
   };
@@ -79,6 +83,7 @@ const App: React.FC = () => {
     logoutUser();
     setCurrentUser(null);
     setIsAdmin(false);
+    setAdminRole(null);
     window.location.hash = ''; // Clear the hash
   };
 
@@ -109,7 +114,7 @@ const App: React.FC = () => {
 
   // 2. Admin View
   if (isAdmin) {
-    return <AdminView onLogout={handleLogout} />;
+    return <AdminView onLogout={handleLogout} adminRole={adminRole} />;
   }
 
   // 3. Member View
