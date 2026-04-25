@@ -1,14 +1,14 @@
 /**
- * DICE BACKEND - V15 (Added Admin List)
+ * FOTOSNAPS BACKEND - V16 (Aligned with actual DB columns)
  * 1. Run 'setup' function manually first to authorize scopes.
  * 2. Deploy as Web App -> Execute as: "Me", Access: "Anyone".
- * COLUMN ORDER: id | name | email | phone | address | referralCode | birthDate | currentStamps | maxStamps | createdAt
+ * COLUMN ORDER: id[0] | name[1] | email[2] | phone[3] | address[4] | birthDate[5] | currentStamps[6] | maxStamps[7] | createdAt[8]
  */
 
 function setup() {
   const doc = SpreadsheetApp.getActiveSpreadsheet();
   getOrCreateSheet(doc, 'Users', [
-      'id', 'name', 'email', 'phone', 'address', 'referralCode', 'birthDate', 'currentStamps', 'maxStamps', 'createdAt'
+      'id', 'name', 'email', 'phone', 'address', 'birthDate', 'currentStamps', 'maxStamps', 'createdAt'
   ]);
   getOrCreateSheet(doc, 'Transactions', [
       'id', 'userId', 'type', 'amount', 'timestamp', 'dateString'
@@ -48,7 +48,7 @@ function handleRequest(e) {
 
     const action = requestData.action;
     const usersSheet = getOrCreateSheet(doc, 'Users', [
-      'id', 'name', 'email', 'phone', 'address', 'referralCode', 'birthDate', 'currentStamps', 'maxStamps', 'createdAt'
+      'id', 'name', 'email', 'phone', 'address', 'birthDate', 'currentStamps', 'maxStamps', 'createdAt'
     ]);
     
     const txSheet = getOrCreateSheet(doc, 'Transactions', [
@@ -72,11 +72,10 @@ function handleRequest(e) {
           requestData.email,
           String(requestData.phone || '').trim(),
           requestData.address || '',
-          String(requestData.adminReferral || '').trim(),  // referralCode
-          String(requestData.birthDate || '').trim(),
-          0,   // currentStamps
-          10,  // maxStamps
-          new Date().toISOString()
+          String(requestData.birthDate || '').trim(), // birthDate [5]
+          0,   // currentStamps [6]
+          10,  // maxStamps [7]
+          new Date().toISOString() // createdAt [8]
         ];
         usersSheet.appendRow(newUser);
         SpreadsheetApp.flush();
@@ -94,7 +93,7 @@ function handleRequest(e) {
       } else {
          const row = allUsers.slice(1).find(r => {
            const sheetPhone = String(r[3]).trim().replace(/\s/g, '');
-           const sheetDate = formatDate(r[6]); // birthDate is now col index 6
+           const sheetDate = formatDate(r[5]); // birthDate = col index 5
            return sheetPhone === inputPhone && sheetDate === inputBirth;
          });
 
@@ -120,7 +119,7 @@ function handleRequest(e) {
 
     else if (action === 'getHistory') {
       const userId = String(requestData.userId).trim();
-      const history = getTransactionsForUser(txSheet, userId);
+      const history = getTransactionsForUser(txSheet, doc, userId);
       result = { success: true, history: history };
     }
 
@@ -133,12 +132,12 @@ function handleRequest(e) {
         result = { success: false, error: "User not found." };
       } else {
         const realRow = userIndex + 2;
-        const currentStamps = parseInt(allUsers[userIndex + 1][7] || 0); // stamps now col 7
-        const maxStamps = parseInt(allUsers[userIndex + 1][8] || 10);    // maxStamps now col 8
+        const currentStamps = parseInt(allUsers[userIndex + 1][6] || 0); // currentStamps = col 6
+        const maxStamps = parseInt(allUsers[userIndex + 1][7] || 10);    // maxStamps = col 7
         
         if (currentStamps < maxStamps) {
           const newStampCount = currentStamps + 1;
-          usersSheet.getRange(realRow, 8).setValue(newStampCount); // currentStamps is col 8 (1-indexed)
+          usersSheet.getRange(realRow, 7).setValue(newStampCount); // currentStamps is col 7 (1-indexed)
           const now = new Date();
           txSheet.appendRow(['tx-' + now.getTime(), userId, 'add', 1, now.getTime(), now.toISOString()]);
           SpreadsheetApp.flush();
@@ -153,9 +152,9 @@ function handleRequest(e) {
             newVoucher = generateVoucher(doc, userId, newStampCount, checkpoint.reward);
           }
           
-          const history = getTransactionsForUser(txSheet, userId);
+          const history = getTransactionsForUser(txSheet, doc, userId);
           const updatedRow = [...allUsers[userIndex + 1]];
-          updatedRow[6] = newStampCount;
+          updatedRow[6] = newStampCount; // currentStamps index
           result = { 
             success: true, 
             user: mapRowToUser(updatedRow, history),
@@ -172,23 +171,18 @@ function handleRequest(e) {
        result = { users: allUsers.map(r => mapRowToUser(r, [])) };
     }
 
-    // NEW: Get checkpoint configuration
+    // Get checkpoint configuration — reads purely from CheckpointConfig sheet
     else if (action === 'getCheckpointConfig') {
       const configSheet = getOrCreateSheet(doc, 'CheckpointConfig', ['maxStamps', 'checkpoints']);
       const data = configSheet.getDataRange().getValues();
       
       if (data.length < 2) {
-        // Return default configuration
+        // Sheet exists but has no data row — return empty config
         result = {
           success: true,
           config: {
             maxStamps: 10,
-            checkpoints: [
-              { stampCount: 3, reward: 'Free Lychee Tea' },
-              { stampCount: 5, reward: 'diskon 15% off game' },
-              { stampCount: 7, reward: 'Free french fries' },
-              { stampCount: 10, reward: 'Free all day pass' }
-            ]
+            checkpoints: []
           }
         };
       } else {
@@ -359,7 +353,7 @@ function handleRequest(e) {
         const weekEnd = new Date(now.getTime() - i * msPerWeek);
         const weekStart = new Date(weekEnd.getTime() - msPerWeek);
         const count = allUsers.filter(function(row) {
-          const createdAt = new Date(row[9]);
+          const createdAt = new Date(row[8]); // createdAt = col 8
           return createdAt >= weekStart && createdAt < weekEnd;
         }).length;
 
@@ -394,7 +388,7 @@ function handleRequest(e) {
             id: userId,
             name: row[1],
             phone: row[3],
-            stamps: parseInt(row[7] || 0),
+            stamps: parseInt(row[6] || 0), // currentStamps = col 6
             lastStampAt: lastTs ? new Date(lastTs).toISOString() : null,
             daysSinceLastStamp: lastTs ? Math.floor((now.getTime() - lastTs) / msPerDay) : null
           };
@@ -415,10 +409,10 @@ function handleRequest(e) {
         return new Date(lastStamp) >= oneMonthAgo;
       });
       const newActiveCount = activeUsers.filter(function(row) {
-        return new Date(row[9]) >= oneMonthAgo;
+        return new Date(row[8]) >= oneMonthAgo; // createdAt = col 8
       }).length;
       const veteranActiveCount = activeUsers.filter(function(row) {
-        return new Date(row[9]) < oneMonthAgo;
+        return new Date(row[8]) < oneMonthAgo; // createdAt = col 8
       }).length;
 
       // --- Daily member registrations for last 56 days (8 weeks x 7 days) ---
@@ -428,7 +422,7 @@ function handleRequest(e) {
         const dayEnd = new Date(now.getTime() - i * msPerDay);
         const dayStart = new Date(dayEnd.getTime() - msPerDay);
         const count = allUsers.filter(function(row) {
-          const createdAt = new Date(row[9]);
+          const createdAt = new Date(row[8]); // createdAt = col 8
           return createdAt >= dayStart && createdAt < dayEnd;
         }).length;
         dailyGrowth.push({
@@ -442,65 +436,18 @@ function handleRequest(e) {
       for (let i = 7; i >= 0; i--) {
         const weekEnd = new Date(now.getTime() - i * msPerWeek);
         const count = allUsers.filter(function(row) {
-          return new Date(row[9]) < weekEnd;
+          return new Date(row[8]) < weekEnd; // createdAt = col 8
         }).length;
         cumulativeGrowth.push({ label: weeklyGrowth[7 - i].label, count: count });
       }
 
-      // --- Referral Performance ---
-      // row[5] = referralCode (admin code used when registering)
-      const referralCount = {};
-      allUsers.forEach(function(row) {
-        const code = String(row[5] || '').trim();
-        if (code) {
-          referralCount[code] = (referralCount[code] || 0) + 1;
-        }
-      });
-      const referralLeaderboard = Object.keys(referralCount)
-        .map(function(code) { return { code: code, count: referralCount[code] }; })
-        .sort(function(a, b) { return b.count - a.count; })
-        .slice(0, 10);
+      // --- Referral Performance (no referralCode column in DB, kept empty) ---
+      const referralLeaderboard = [];
+      const totalReferred = 0;
 
-      const totalReferred = allUsers.filter(function(row) {
-        return String(row[5] || '').trim() !== '';
-      }).length;
-
-      // Monthly referral count — starting from Feb 2026 (app launch)
-      const mnthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-      const refAppStart = new Date(2026, 1, 1); // Feb 1, 2026
+      // Monthly referrals (no referralCode column — kept empty arrays)
       const monthlyReferrals = [];
-      const monthlyLeaderboards = {}; // { "Feb 26": [{code, count}, ...], ... }
-
-      var cursor = new Date(refAppStart);
-      while (cursor <= now) {
-        var mStart = new Date(cursor);
-        var mEnd   = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1);
-        var mLabel = mnthNames[mStart.getMonth()] + ' ' + String(mStart.getFullYear()).slice(2);
-
-        // Count total referred this month
-        var mCount = allUsers.filter(function(row) {
-          var hasRef = String(row[5] || '').trim() !== '';
-          var created = new Date(row[9]);
-          return hasRef && created >= mStart && created < mEnd;
-        }).length;
-        monthlyReferrals.push({ label: mLabel, count: mCount });
-
-        // Per-referral-code breakdown for this month
-        var codeTally = {};
-        allUsers.forEach(function(row) {
-          var code = String(row[5] || '').trim();
-          if (!code) return;
-          var created = new Date(row[9]);
-          if (created >= mStart && created < mEnd) {
-            codeTally[code] = (codeTally[code] || 0) + 1;
-          }
-        });
-        monthlyLeaderboards[mLabel] = Object.keys(codeTally)
-          .map(function(c) { return { code: c, count: codeTally[c] }; })
-          .sort(function(a, b) { return b.count - a.count; });
-
-        cursor = mEnd; // advance to next month
-      }
+      const monthlyLeaderboards = {};
 
       // --- Birthday ---
       const todayMonth = now.getMonth() + 1; // 1-indexed
@@ -510,10 +457,8 @@ function handleRequest(e) {
       var birthdayThisMonth = [];
 
       allUsers.forEach(function(row) {
-        // Use formatDate() to handle cases where Google Sheets stores the value
-        // as a Date object (auto-converted from a date string), which would produce
-        // an unrecognizable format if coerced via String() directly.
-        const rawBirth = formatDate(row[6]).trim();
+        // birthDate = col 5. Use formatDate() to handle Date objects stored by Sheets.
+        const rawBirth = formatDate(row[5]).trim(); // birthDate = col 5
         if (!rawBirth) return;
 
         // birthDate stored as YYYY-MM-DD or DD/MM/YYYY or similar
@@ -554,6 +499,43 @@ function handleRequest(e) {
       // Sort this-month birthdays by day
       birthdayThisMonth.sort(function(a, b) { return a.birthDay - b.birthDay; });
 
+      // --- Vouchers ---
+      let activeVoucherCount = 0;
+      let redeemedVoucherCount = 0;
+      let expiredVoucherCount = 0;
+      let topVouchers = {};
+
+      try {
+        const vSheet = doc.getSheetByName('Vouchers');
+        if (vSheet) {
+          const vouchers = vSheet.getDataRange().getValues().slice(1);
+          vouchers.forEach(function(row) {
+            const status = String(row[7]);
+            const rewardName = String(row[3]);
+            if (status === 'active') activeVoucherCount++;
+            else if (status === 'redeemed') redeemedVoucherCount++;
+            else if (status === 'expired') expiredVoucherCount++;
+
+            if (!topVouchers[rewardName]) {
+               topVouchers[rewardName] = { active: 0, redeemed: 0, expired: 0 };
+            }
+            if (status === 'active') topVouchers[rewardName].active++;
+            else if (status === 'redeemed') topVouchers[rewardName].redeemed++;
+            else if (status === 'expired') topVouchers[rewardName].expired++;
+          });
+        }
+      } catch(e) {}
+
+      const voucherStats = Object.keys(topVouchers).map(function(name) {
+         return {
+           name: name,
+           active: topVouchers[name].active,
+           redeemed: topVouchers[name].redeemed,
+           expired: topVouchers[name].expired,
+           total: topVouchers[name].active + topVouchers[name].redeemed + topVouchers[name].expired
+         };
+      }).sort(function(a, b) { return b.total - a.total; });
+
       result = {
         success: true,
         data: {
@@ -570,7 +552,11 @@ function handleRequest(e) {
           monthlyReferrals: monthlyReferrals,
           monthlyLeaderboards: monthlyLeaderboards,
           birthdayToday: birthdayToday,
-          birthdayThisMonth: birthdayThisMonth
+          birthdayThisMonth: birthdayThisMonth,
+          activeVoucherCount: activeVoucherCount,
+          redeemedVoucherCount: redeemedVoucherCount,
+          expiredVoucherCount: expiredVoucherCount,
+          voucherStats: voucherStats
         }
       };
     }
@@ -626,15 +612,41 @@ function handleRequest(e) {
       const allTx = txSheet.getDataRange().getValues().slice(1);
       allTx.sort(function(a, b) { return b[4] - a[4]; }); // newest first
 
+      // Fetch Vouchers for reward names
+      let voucherMap = {};
+      try {
+        const vSheet = doc.getSheetByName('Vouchers');
+        if (vSheet) {
+          const allVouchers = vSheet.getDataRange().getValues().slice(1);
+          allVouchers.forEach(v => {
+            const vUserId = String(v[1]);
+            const ts = new Date(v[4]).getTime();
+            if (!voucherMap[vUserId]) voucherMap[vUserId] = {};
+            voucherMap[vUserId][ts] = String(v[3]);
+          });
+        }
+      } catch (e) {}
+
       const transactions = allTx.map(function(r) {
+        const txType = r[2];
+        const txTs = Number(r[4]);
+        const txUserId = String(r[1]);
+        let rewardName = null;
+
+        if ((txType === 'voucher_earned' || txType === 'voucher_redeemed') && voucherMap[txUserId]) {
+          const closest = Object.keys(voucherMap[txUserId]).find(vTs => Math.abs(Number(vTs) - txTs) < 10000);
+          if (closest) rewardName = voucherMap[txUserId][closest];
+        }
+
         return {
           id: r[0],
-          userId: r[1],
-          userName: userMap[String(r[1])] || '',
-          type: r[2],
+          userId: txUserId,
+          userName: userMap[txUserId] || '',
+          type: txType,
           amount: Number(r[3]),
-          timestamp: Number(r[4]),
-          dateString: r[5]
+          timestamp: txTs,
+          dateString: r[5],
+          rewardName: rewardName
         };
       });
 
@@ -651,14 +663,14 @@ function handleRequest(e) {
         result = { success: false, error: "User not found." };
       } else {
         const realRow = userIndex + 2;
-        usersSheet.getRange(realRow, 8).setValue(0); // reset currentStamps (col 8, 1-indexed)
+        usersSheet.getRange(realRow, 7).setValue(0); // reset currentStamps (col 7, 1-indexed)
         const now = new Date();
         txSheet.appendRow(['tx-' + now.getTime(), userId, 'reset', 0, now.getTime(), now.toISOString()]);
         SpreadsheetApp.flush();
 
         const updatedRow = [...allUsers[userIndex + 1]];
-        updatedRow[7] = 0; // stamps index in row
-        const history = getTransactionsForUser(txSheet, userId);
+        updatedRow[6] = 0; // currentStamps index in row
+        const history = getTransactionsForUser(txSheet, doc, userId);
         result = { success: true, user: mapRowToUser(updatedRow, history) };
       }
     }
@@ -694,33 +706,54 @@ function getOrCreateSheet(doc, name, headers) {
     sheet.appendRow(headers);
     sheet.setFrozenRows(1);
     
-    // NEW: Initialize CheckpointConfig with default data
-    if (name === 'CheckpointConfig') {
-      sheet.appendRow([
-        10,
-        JSON.stringify([
-          { stampCount: 3, reward: 'Free iced tea' },
-          { stampCount: 5, reward: 'Free drink upgrade' },
-          { stampCount: 10, reward: 'Free beverage' }
-        ])
-      ]);
-    }
+    // CheckpointConfig sheet starts empty — config must be set via admin panel or directly in the sheet
     // AdminList starts empty — admins are added via the admin panel
   }
   return sheet;
 }
 
-function getTransactionsForUser(sheet, userId) {
+function getTransactionsForUser(sheet, doc, userId) {
   const allTx = sheet.getDataRange().getValues().slice(1);
   const userTx = allTx.filter(r => String(r[1]) === String(userId));
   userTx.sort((a, b) => b[4] - a[4]);
-  return userTx.map(r => ({
-    id: r[0],
-    timestamp: Number(r[4]),
-    type: r[2],
-    amount: Number(r[3])
-  }));
+
+  // Build voucher map for this user: timestamp (ms) -> rewardName
+  // We'll match by finding the voucher whose createdAt is within 5s of the tx timestamp
+  let voucherMap = {};
+  try {
+    const vSheet = doc.getSheetByName('Vouchers');
+    if (vSheet) {
+      const allVouchers = vSheet.getDataRange().getValues().slice(1);
+      allVouchers
+        .filter(v => String(v[1]) === String(userId))
+        .forEach(v => {
+          const ts = new Date(v[4]).getTime(); // createdAt
+          voucherMap[ts] = { rewardName: String(v[3]), stampCount: parseInt(v[2]) };
+        });
+    }
+  } catch(e) {}
+
+  return userTx.map(r => {
+    const txType = r[2];
+    const txTs = Number(r[4]);
+    let rewardName = null;
+
+    if (txType === 'voucher_earned' || txType === 'voucher_redeemed') {
+      // Find closest voucher within 10 seconds of this transaction
+      const closest = Object.keys(voucherMap).find(vTs => Math.abs(Number(vTs) - txTs) < 10000);
+      if (closest) rewardName = voucherMap[closest].rewardName;
+    }
+
+    return {
+      id: r[0],
+      timestamp: txTs,
+      type: txType,
+      amount: Number(r[3]),
+      rewardName: rewardName
+    };
+  });
 }
+
 
 function mapRowToUser(row, history) {
   return {
@@ -729,11 +762,10 @@ function mapRowToUser(row, history) {
     email: row[2],
     phone: row[3],
     address: row[4],
-    referralCode: row[5] || '',      // NEW: Admin referral code
-    birthDate: formatDate(row[6]),   // shifted from 5 -> 6
-    stamps: parseInt(row[7] || 0),   // shifted from 6 -> 7
-    maxStamps: parseInt(row[8] || 10), // shifted from 7 -> 8
-    createdAt: row[9] || new Date().toISOString(), // shifted from 8 -> 9
+    birthDate: formatDate(row[5]),        // birthDate = col 5
+    stamps: parseInt(row[6] || 0),        // currentStamps = col 6
+    maxStamps: parseInt(row[7] || 10),    // maxStamps = col 7
+    createdAt: row[8] || new Date().toISOString(), // createdAt = col 8
     history: history
   };
 }
@@ -822,15 +854,8 @@ function getCheckpointConfiguration(doc) {
   const data = configSheet.getDataRange().getValues();
   
   if (data.length < 2) {
-    return {
-      maxStamps: 10,
-      checkpoints: [
-        { stampCount: 3, reward: 'Free Lychee Tea' },
-        { stampCount: 5, reward: 'diskon 15% off game' },
-        { stampCount: 7, reward: 'Free french fries' },
-        { stampCount: 10, reward: 'Free all day pass' }
-      ]
-    };
+    // No config in sheet — return empty checkpoints
+    return { maxStamps: 10, checkpoints: [] };
   }
   
   const maxStamps = parseInt(data[1][0]) || 10;

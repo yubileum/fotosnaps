@@ -132,7 +132,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLogin }) => {
 
   // Registration fields
   const [name, setName] = useState('');
-  const [address, setAddress] = useState('Kelapa Gading');
+  const [address, setAddress] = useState('');
   const [adminReferral, setAdminReferral] = useState('');
   const [adminList, setAdminList] = useState<AdminEntry[]>([]);
   const [isLoadingAdmins, setIsLoadingAdmins] = useState(true);
@@ -413,25 +413,21 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLogin }) => {
                 </p>
               </div>
 
-              {/* Domicile Dropdown */}
+              {/* Domicile Text Input */}
               <div className="space-y-1.5">
                 <label className="block text-sm font-bold text-gray-900 tracking-tight">Domicile <span className="text-red-500">*</span></label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-brand-500 transition-colors">
                     <MapPin size={18} />
                   </div>
-                  <select
+                  <input
+                    type="text"
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     required
-                    className="w-full pl-10 pr-4 py-3.5 rounded-xl border-2 border-gray-200 bg-white text-gray-900 focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-100 outline-none transition-all font-medium hover:border-gray-300 appearance-none cursor-pointer"
-                  >
-                    <option value="Kelapa Gading">Kelapa Gading</option>
-                    <option value="Luar Kelapa Gading">Luar Kelapa Gading</option>
-                  </select>
-                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-400">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                  </div>
+                    placeholder="Bandung"
+                    className="w-full pl-10 pr-4 py-3.5 rounded-xl border-2 border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-100 outline-none transition-all font-medium hover:border-gray-300"
+                  />
                 </div>
               </div>
 
@@ -460,37 +456,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLogin }) => {
                 </p>
               </div>
 
-              {/* Staff Pick Dropdown */}
-              <div className="space-y-1.5">
-                <label className="block text-sm font-bold text-gray-900 tracking-tight">
-                  Served By Staff
-                </label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-brand-500 transition-colors">
-                    <Tag size={18} />
-                  </div>
-                  <select
-                    value={adminReferral}
-                    onChange={(e) => setAdminReferral(e.target.value)}
-                    disabled={isLoadingAdmins}
-                    className="w-full pl-10 pr-10 py-3.5 rounded-xl border-2 border-gray-200 bg-white text-gray-900 focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-100 outline-none transition-all font-medium hover:border-gray-300 appearance-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    <option value="">{isLoadingAdmins ? 'Loading staff...' : '— Select staff (optional) —'}</option>
-                    {adminList.map(admin => (
-                      <option key={admin.id} value={admin.code}>
-                        {admin.name}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-400">
-                    <ChevronDown size={16} />
-                  </div>
-                </div>
-                <p className="text-xs text-gray-500 mt-1.5 flex items-center gap-1">
-                  <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
-                  Select the staff who assisted you (optional)
-                </p>
-              </div>
+              {/* Staff Pick Dropdown — hidden */}
             </div>
           )}
 
@@ -520,7 +486,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLogin }) => {
               setCountryCode('62');
               setBirthDate('');
               setName('');
-              setAddress('Kelapa Gading');
+              setAddress('');
               setAdminReferral('');
             }}
             className="text-sm font-black text-brand-600 hover:text-brand-700 flex items-center justify-center gap-2 mx-auto py-2 px-6 rounded-xl hover:bg-brand-50 transition-all uppercase tracking-wider group"

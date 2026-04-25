@@ -1,20 +1,15 @@
 import { StampConfig, StampCheckpoint } from '../types';
 
-const STAMP_CONFIG_CACHE_KEY = 'dice_stamp_config_cache_v1';
+const STAMP_CONFIG_CACHE_KEY = 'dice_stamp_config_cache_v2';
 const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes (increased from 5)
 
 // API URL - same as storage.ts
-const API_URL = 'https://script.google.com/macros/s/AKfycbwJUABZ9PsGEv91FjlB33kOAsYsMm6oz77isOwtvw2JQQNSpvtwkBdby2EzyZgB7qcmVg/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwNpw89rOPWtfIEjoZqnu8PpxAFjPFpbZHu92wOjHNYZ3plrhY_WYLHCLFY9myXnDvgLA/exec';
 
-// Default configuration (fallback)
+// Empty config — all real data comes from CheckpointConfig sheet via API
 const DEFAULT_CONFIG: StampConfig = {
     maxStamps: 10,
-    checkpoints: [
-        { stampCount: 3, reward: 'Free Lychee Tea' },
-        { stampCount: 5, reward: 'diskon 15% off game' },
-        { stampCount: 7, reward: 'Free french fries' },
-        { stampCount: 10, reward: 'Free all day pass' }
-    ]
+    checkpoints: []
 };
 
 interface CachedConfig {

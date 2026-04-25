@@ -8,18 +8,18 @@ import { fetchDashboardData } from '../services/storage';
 
 // ─── Brand Colors ─────────────────────────────────────────────────────────────
 const C = {
-  green:    '#006B3F',
-  greenMid: '#008f55',
-  greenLt:  '#00c471',
-  greenDim: '#003d24',
+  green:    '#6b21a8',
+  greenMid: '#9333ea',
+  greenLt:  '#a855f7',
+  greenDim: '#3b0764',
   amber:    '#f59e0b',
   amberLt:  '#fcd34d',
   red:      '#ef4444',
   redLt:    '#fca5a5',
-  grid:     '#1a2e23',
-  gridLt:   '#243b2e',
-  text:     '#a3c4b0',
-  textDim:  '#4d7260',
+  grid:     '#2e1a2b',
+  gridLt:   '#3b2438',
+  text:     '#c4a3be',
+  textDim:  '#724d67',
 };
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -44,6 +44,10 @@ interface DashboardData {
   monthlyLeaderboards: Record<string, { code: string; count: number }[]>;
   birthdayToday: BirthdayPerson[];
   birthdayThisMonth: BirthdayPerson[];
+  activeVoucherCount?: number;
+  redeemedVoucherCount?: number;
+  expiredVoucherCount?: number;
+  voucherStats?: { name: string; active: number; redeemed: number; expired: number; total: number }[];
 }
 interface DashboardViewProps { onClose: () => void; }
 
@@ -95,7 +99,7 @@ const ComboChart: React.FC<{
           <stop offset="100%" stopColor={C.greenDim} stopOpacity="1" />
         </linearGradient>
         <linearGradient id="barS" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#4ade80" />
+          <stop offset="0%" stopColor="#c084fc" />
           <stop offset="100%" stopColor={C.green} />
         </linearGradient>
         <linearGradient id="areaUp" x1="0" y1="0" x2="0" y2="1">
@@ -145,7 +149,7 @@ const ComboChart: React.FC<{
           <g key={i} onClick={() => onSelectWeek(isSel ? null : i)} style={{ cursor: 'pointer' }}>
             {/* Hover column highlight */}
             <rect x={x} y={cT} width={barW} height={cH} rx="2"
-              fill={isSel ? 'rgba(0,107,63,0.15)' : 'transparent'} />
+              fill={isSel ? 'rgba(107,33,168,0.15)' : 'transparent'} />
             {/* Bar */}
             <rect x={x} y={bY} width={barW} height={bH} rx="3"
               fill={isSel ? 'url(#barS)' : 'url(#barN)'}
@@ -158,13 +162,13 @@ const ComboChart: React.FC<{
             {/* Count label */}
             {week.count > 0 && (
               <text x={x + barW / 2} y={bY - 8} textAnchor="middle"
-                fill={isSel ? '#4ade80' : C.text} fontSize="14" fontWeight="800">
+                fill={isSel ? '#c084fc' : C.text} fontSize="14" fontWeight="800">
                 {week.count}
               </text>
             )}
             {/* X label */}
             <text x={x + barW / 2} y={H - 8} textAnchor="middle"
-              fill={isSel ? '#4ade80' : C.textDim}
+              fill={isSel ? '#c084fc' : C.textDim}
               fontSize="13" fontWeight={isSel ? '800' : '600'}>
               {week.label}
             </text>
@@ -203,7 +207,7 @@ const ComboChart: React.FC<{
                 fill={isPos ? C.greenLt : C.red} fillOpacity="0.2" />
             )}
             <circle cx={cx} cy={cy} r={isSel ? 5.5 : 4}
-              fill="#0d1a12" stroke={isPos ? C.greenLt : C.red}
+              fill="#180a1f" stroke={isPos ? C.greenLt : C.red}
               strokeWidth={isSel ? 2.5 : 1.5} />
             {/* % label */}
             <text x={cx} y={labelY} textAnchor="middle"
@@ -256,7 +260,7 @@ const MonthlyBarChart: React.FC<{
           <stop offset="100%" stopColor={C.greenDim} stopOpacity="1" />
         </linearGradient>
         <linearGradient id="mBarCur" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#4ade80" />
+          <stop offset="0%" stopColor="#c084fc" />
           <stop offset="100%" stopColor={C.green} />
         </linearGradient>
       </defs>
@@ -288,7 +292,7 @@ const MonthlyBarChart: React.FC<{
             style={{ cursor: 'pointer' }}>
             {/* Column hover bg */}
             <rect x={x} y={cT} width={barW} height={cH}
-              fill={isSel ? 'rgba(0,196,113,0.1)' : 'transparent'} />
+              fill={isSel ? 'rgba(168,85,247,0.1)' : 'transparent'} />
             {/* Bar */}
             <rect x={x} y={bY} width={barW} height={bH} rx="3"
               fill={isSel ? 'url(#mBarCur)' : isCur ? 'url(#mBarCur)' : 'url(#mBarN)'}
@@ -299,21 +303,21 @@ const MonthlyBarChart: React.FC<{
             )}
             {b.count > 0 && (
               <text x={barCX(i)} y={bY - 7} textAnchor="middle"
-                fill={isSel ? '#4ade80' : isCur ? '#4ade80' : C.text}
+                fill={isSel ? '#c084fc' : isCur ? '#c084fc' : C.text}
                 fontSize="13" fontWeight="800">
                 {b.count}
               </text>
             )}
             {/* X label */}
             <text x={barCX(i)} y={H - 6} textAnchor="middle"
-              fill={isSel ? '#4ade80' : isCur ? '#4ade80' : C.textDim}
+              fill={isSel ? '#c084fc' : isCur ? '#c084fc' : C.textDim}
               fontSize="12" fontWeight={isSel || isCur ? '800' : '600'}>
               {b.label}
             </text>
             {/* Selection indicator */}
             {isSel && (
               <text x={barCX(i)} y={H - 6 + 14} textAnchor="middle"
-                fill="#4ade80" fontSize="11">▲</text>
+                fill="#c084fc" fontSize="11">▲</text>
             )}
           </g>
         );
@@ -441,7 +445,7 @@ const CumulativeChart: React.FC<{
         return (
           <g key={i}>
             <circle cx={cx} cy={cy} r="4.5"
-              fill={C.green} stroke="#0d1a12" strokeWidth="2.5" />
+              fill={C.green} stroke="#180a1f" strokeWidth="2.5" />
             {w.count > 0 && (
               <text x={cx} y={isNearTop ? cy + 18 : cy - 9} textAnchor="middle"
                 fill={C.text} fontSize="12" fontWeight="700">
@@ -466,7 +470,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onClose }) => {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [tab, setTab] = useState<'overview' | 'retention' | 'referral' | 'birthday'>('overview');
+  const [tab, setTab] = useState<'overview' | 'retention' | 'birthday' | 'vouchers'>('overview');
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
   const [selectedReferralMonth, setSelectedReferralMonth] = useState<string | null>(null);
 
@@ -497,14 +501,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onClose }) => {
       <div className="absolute inset-0 backdrop-blur-sm" onClick={onClose} />
 
       <div className="relative w-full h-full sm:h-auto sm:max-h-[95vh] sm:max-w-5xl lg:max-w-6xl flex flex-col sm:rounded-3xl overflow-hidden animate-in zoom-in-95"
-        style={{ background: '#0a1610', border: `1px solid ${C.gridLt}`, boxShadow: `0 0 60px rgba(0,107,63,0.25)` }}>
+        style={{ background: '#14081c', border: `1px solid ${C.gridLt}`, boxShadow: `0 0 60px rgba(107,33,168,0.25)` }}>
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 shrink-0"
           style={{ borderBottom: `1px solid ${C.grid}` }}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ background: `linear-gradient(135deg, ${C.green}, ${C.greenDim})`, boxShadow: `0 0 20px rgba(0,107,63,0.5)` }}>
+              style={{ background: `linear-gradient(135deg, ${C.green}, ${C.greenDim})`, boxShadow: `0 0 20px rgba(107,33,168,0.5)` }}>
               <BarChart2 size={20} className="text-white" />
             </div>
             <div>
@@ -531,13 +535,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onClose }) => {
           {([
             { id: 'overview',  label: '📊 Overview & Growth' },
             { id: 'retention', label: '🔄 Retention' },
-            { id: 'referral',  label: '🏷️ Referral' },
             { id: 'birthday',  label: '🎂 Birthday' },
+            { id: 'vouchers',  label: '🎟️ Vouchers' },
           ] as const).map(t => (
             <button key={t.id} onClick={() => setTab(t.id as any)}
               className="px-4 py-2 rounded-xl text-sm font-bold transition-all"
               style={tab === t.id
-                ? { background: C.green, color: '#fff', boxShadow: `0 4px 20px rgba(0,107,63,0.4)` }
+                ? { background: C.green, color: '#fff', boxShadow: `0 4px 20px rgba(107,33,168,0.4)` }
                 : { color: C.text }}>
               {t.label}
             </button>
@@ -990,6 +994,85 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onClose }) => {
                         </div>
                       </div>
                     ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* ── VOUCHERS TAB ── */}
+          {data && !loading && tab === 'vouchers' && (
+            <>
+              {/* Voucher KPIs */}
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { label: 'Active', value: data.activeVoucherCount || 0, icon: <Gift size={17} />, accent: C.greenLt },
+                  { label: 'Redeemed', value: data.redeemedVoucherCount || 0, icon: <Award size={17} />, accent: C.amber },
+                  { label: 'Expired', value: data.expiredVoucherCount || 0, icon: <X size={17} />, accent: C.red },
+                ].map(kpi => (
+                  <div key={kpi.label} className={card} style={cardStyle}>
+                    <div className="w-8 h-8 rounded-xl flex items-center justify-center mb-3 text-white"
+                      style={{ background: kpi.accent, boxShadow: `0 0 16px ${kpi.accent}55` }}>
+                      {kpi.icon}
+                    </div>
+                    <p className="text-2xl font-black text-white">{kpi.value}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider mt-0.5" style={{ color: C.textDim }}>{kpi.label}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Voucher Leaderboard */}
+              <div className={card} style={cardStyle}>
+                <div className="flex items-center gap-2 mb-4">
+                  <Tag size={15} style={{ color: C.greenLt }} />
+                  <p className="font-black text-sm text-white">Voucher Distribution</p>
+                </div>
+
+                {(!data.voucherStats || data.voucherStats.length === 0) ? (
+                  <div className="py-8 text-center">
+                    <p className="font-bold text-sm" style={{ color: C.textDim }}>No vouchers generated yet.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {data.voucherStats.map((item, i) => {
+                      const totalCount = item.total;
+                      const maxCount = data.voucherStats![0].total;
+                      const pct = (totalCount / maxCount) * 100;
+                      return (
+                        <div key={item.name}>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <div className="flex items-center gap-2">
+                              <span className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black"
+                                style={{ background: C.gridLt, color: C.text }}>
+                                {i + 1}
+                              </span>
+                              <div className="flex items-center gap-1.5">
+                                <Gift size={12} style={{ color: C.textDim }} />
+                                <span className="text-sm font-black" style={{ color: '#e5f0e8' }}>
+                                  {item.name}
+                                </span>
+                              </div>
+                            </div>
+                            <span className="text-sm font-black" style={{ color: C.text }}>
+                              {totalCount} total
+                            </span>
+                          </div>
+                          <div className="h-2 rounded-full overflow-hidden flex gap-px" style={{ background: C.grid }}>
+                            <div className="h-full transition-all duration-700"
+                              style={{ width: `${(item.active / totalCount) * pct}%`, background: C.greenLt }} title={`${item.active} Active`} />
+                            <div className="h-full transition-all duration-700"
+                              style={{ width: `${(item.redeemed / totalCount) * pct}%`, background: C.amber }} title={`${item.redeemed} Redeemed`} />
+                            <div className="h-full transition-all duration-700"
+                              style={{ width: `${(item.expired / totalCount) * pct}%`, background: C.red }} title={`${item.expired} Expired`} />
+                          </div>
+                          <div className="flex justify-between mt-1 text-[10px] font-bold" style={{ color: C.textDim }}>
+                            <span>{item.active} Active</span>
+                            <span>{item.redeemed} Redeemed</span>
+                            <span>{item.expired} Expired</span>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>

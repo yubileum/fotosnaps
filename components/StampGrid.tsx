@@ -121,7 +121,7 @@ export const StampGrid: React.FC<StampGridProps> = ({ user, onResetStamps }) => 
                   ) : (
                     <div className="relative w-full h-full flex items-center justify-center p-1 sm:p-2">
                       <img
-                        src="/dice-logo.png"
+                        src="/Logo fotosnaps.png"
                         alt="Stamped"
                         className={`w-full h-full object-contain ${isNew ? 'animate-bounce' : ''}`}
                       />

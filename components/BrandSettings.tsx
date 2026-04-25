@@ -67,7 +67,7 @@ export const BrandSettings: React.FC<BrandSettingsProps> = ({ onClose }) => {
                             type="text"
                             value={config.name}
                             onChange={(e) => setConfig({ ...config, name: e.target.value })}
-                            placeholder="Dice"
+                            placeholder="Fotosnaps"
                             className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-gray-50 text-gray-900 placeholder:text-gray-400 focus:bg-white focus:border-brand-600 focus:ring-4 focus:ring-brand-50 outline-none transition-all font-bold text-lg"
                         />
                     </div>
@@ -110,7 +110,7 @@ export const BrandSettings: React.FC<BrandSettingsProps> = ({ onClose }) => {
                                 type="text"
                                 value={config.primaryColor}
                                 onChange={(e) => setConfig({ ...config, primaryColor: e.target.value })}
-                                placeholder="#1B7F5A"
+                                placeholder="#7c3aed"
                                 className="flex-1 px-4 py-3 rounded-xl border border-gray-300 bg-gray-50 text-gray-900 placeholder:text-gray-400 focus:bg-white focus:border-brand-600 focus:ring-4 focus:ring-brand-50 outline-none transition-all font-mono font-bold uppercase"
                             />
                         </div>

@@ -18,6 +18,7 @@ export interface StampEvent {
   timestamp: number;
   type: 'add' | 'redeem' | 'voucher_earned' | 'voucher_redeemed';
   amount: number;
+  rewardName?: string | null;
 }
 
 export interface StampCheckpoint {

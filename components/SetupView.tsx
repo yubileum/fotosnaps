@@ -40,7 +40,7 @@ export const SetupView: React.FC<SetupViewProps> = ({ onComplete, onLogout }) =>
             </div>
             <div>
               <h1 className="text-2xl font-black tracking-tight">System Setup</h1>
-              <p className="text-brand-100 font-medium">Connect to Dice database.</p>
+              <p className="text-brand-100 font-medium">Connect to Fotosnaps database.</p>
             </div>
           </div>
 
@@ -153,7 +153,7 @@ export const SetupView: React.FC<SetupViewProps> = ({ onComplete, onLogout }) =>
 
 const APPS_SCRIPT_CODE = `
 /**
- * DICE BACKEND - V6 (Consistency Fix)
+ * FOTOSNAPS BACKEND - V6 (Consistency Fix)
  * - Added SpreadsheetApp.flush() to ensure updates are instantly visible to other devices.
  * - Unified parameter parsing to support both GET and POST for all actions.
  */

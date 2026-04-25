@@ -10,7 +10,7 @@ const ADMIN_LOGS_KEY = 'dice_admin_history_v4';
 const SYNC_CHANNEL = new BroadcastChannel('dice_global_sync');
 
 // --- STATIC CONFIGURATION ---
-const STATIC_API_URL = 'https://script.google.com/macros/s/AKfycbwJUABZ9PsGEv91FjlB33kOAsYsMm6oz77isOwtvw2JQQNSpvtwkBdby2EzyZgB7qcmVg/exec';
+const STATIC_API_URL = 'https://script.google.com/macros/s/AKfycbwNpw89rOPWtfIEjoZqnu8PpxAFjPFpbZHu92wOjHNYZ3plrhY_WYLHCLFY9myXnDvgLA/exec';
 
 export const setApiUrl = (url: string) => {
   console.warn("API URL is static and cannot be changed via client.");

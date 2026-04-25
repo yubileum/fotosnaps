@@ -4,7 +4,7 @@ const ADMIN_LIST_CACHE_KEY = 'loyalink_admin_list_cache_v1';
 const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
 
 // API URL - same as storage.ts / stampConfig.ts
-const API_URL = 'https://script.google.com/macros/s/AKfycbwJUABZ9PsGEv91FjlB33kOAsYsMm6oz77isOwtvw2JQQNSpvtwkBdby2EzyZgB7qcmVg/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwNpw89rOPWtfIEjoZqnu8PpxAFjPFpbZHu92wOjHNYZ3plrhY_WYLHCLFY9myXnDvgLA/exec';
 
 const DEFAULT_ADMINS: AdminEntry[] = [];
 

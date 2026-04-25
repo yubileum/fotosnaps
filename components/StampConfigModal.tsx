@@ -215,8 +215,9 @@ export const StampConfigModal: React.FC<StampConfigModalProps> = ({ onClose }) =
                         </div>
                     </div>
 
-                    {/* Admin List */}
-                    <div className="bg-gray-700/50 rounded-2xl p-6 border border-gray-600">
+                    {/* Admin List — hidden */}
+                    <div style={{ display: 'none' }}>
+                        <div className="bg-gray-700/50 rounded-2xl p-6 border border-gray-600">
                         <h3 className="text-lg font-black text-white mb-4 flex items-center gap-2">
                             <Users size={20} className="text-purple-400" />
                             Admin List
@@ -292,6 +293,7 @@ export const StampConfigModal: React.FC<StampConfigModalProps> = ({ onClose }) =
                                 <UserPlus size={20} />
                                 Add Admin
                             </button>
+                        </div>
                         </div>
                     </div>
 

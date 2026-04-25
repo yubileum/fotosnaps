@@ -488,7 +488,7 @@ export const MemberView: React.FC<MemberViewProps> = ({ currentUser, onLogout })
                             return {
                               icon: <Gift size={20} className="text-blue-600" />,
                               bgColor: 'bg-blue-100',
-                              label: 'Voucher Earned',
+                              label: evt.rewardName ? `Voucher Earned: ${evt.rewardName}` : 'Voucher Earned',
                               badge: '🎁',
                               badgeColor: 'bg-blue-500 text-white'
                             };
@@ -496,7 +496,7 @@ export const MemberView: React.FC<MemberViewProps> = ({ currentUser, onLogout })
                             return {
                               icon: <Gift size={20} className="text-orange-600" />,
                               bgColor: 'bg-orange-100',
-                              label: 'Voucher Redeemed',
+                              label: evt.rewardName ? `Voucher Redeemed: ${evt.rewardName}` : 'Voucher Redeemed',
                               badge: 'USED',
                               badgeColor: 'bg-orange-500 text-white'
                             };
